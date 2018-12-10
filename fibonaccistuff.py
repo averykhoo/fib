@@ -25,7 +25,7 @@ def fibonacci1(num):
 
 # @verbose
 def fib_helper(num):
-    # print '->', num
+    # print('->', num)
     "Helper function for fibonacci()."
     if num == 0:
         return (0, 1)
@@ -53,24 +53,24 @@ DO = D(0)
 D1 = D(1)
 
 
-@verbose
+# @verbose
 def fibonacci2(num):
     from math import log10
 
     if num >= 0:
-        ndigits = int(log10(1.62) * num + 100)
-        decimal.getcontext().prec = ndigits
-        decimal.getcontext().Emax = ndigits
+        # ndigits = int(log10(1.62) * num + 100)
+        # decimal.getcontext().prec = ndigits
+        # decimal.getcontext().Emax = ndigits
         return fib_helper2(num)[0]
 
 
-@verbose
+# @verbose
 def fib_helper2(num):
-    # print '->', n
+    # print('->', n)
     if num == 0:
-        return 1
+        return 1, 1
     elif num == 1:
-        return 1
+        return 1, 1
     else:
         f_k, f_k_1 = fib_helper2(num // 2)
         f_k_even = f_k * (2 * f_k_1 - f_k)
@@ -135,53 +135,38 @@ def _fib3b(n):
 
 # (not so fast)
 # Fast Fibonnaci
-@verbose
+# @verbose
 def fibonacci4(n):
-    # print '->', n
     if n <= 2:
         return 1
+    return _fib4(n)
+
+def _fib4(n):
+    # print('->', n)
     k = n / 2
-    a = fibonacci4(k + 1)
-    b = fibonacci4(k)
+    a = _fib4(k + 1)
+    b = _fib4(k)
     if n % 2 == 1:
         return a * a + b * b
     else:
         return b * (2 * a - b)
 
+def fibonacci5(n):
+    return _fib5(n)
 
 # what a difference memoization makes
 @memodict
-def fibonacci5(n):
-    print '->', n
+def _fib5(n):
+    # print('->', n)
     if n <= 2:
         return 1
     k = n / 2
-    a = fibonacci5(k + 1)
-    b = fibonacci5(k)
+    a = _fib5(k + 1)
+    b = _fib5(k)
     if n % 2 == 1:
         return a * a + b * b
     else:
         return b * (2 * a - b)
-
-
-# test_list = [fibonacci3, fibonacci1, fibonacci3b, fibonacci6]
-#
-# print '\ntest1\n'
-# for r in xrange(10):
-# 	for f in test_list:
-# 		t0 = time()
-# 		for i in xrange(20000):
-# 			f(i)
-# 		t1 = time()
-# 		print r, 'time =', t1 - t0
-#
-# print '\ntest2\n'
-# for r in xrange(10):
-# 	for f in test_list:
-# 		t0 = time()
-# 		f(10000000)
-# 		t1 = time()
-# 		print r, 'time =', t1 - t0
 
 
 # Returns F(n)
@@ -206,8 +191,45 @@ def _fib3c(n):
             return a * ((b * decimal.Decimal(2)) - a), b * b + a * a
 
 
-t = time()
-a = fibonacci3(20000000)
-a = fibonacci3c(20000000)
-print a
-print time() - t
+if __name__ == '__main__':
+    import pandas as pd
+
+    t = time()
+    print(fibonacci2(20))
+    print(fibonacci3(20))
+    a = fibonacci3c(20000)
+    print(a)
+    print(time() - t)
+
+    test_list = [fibonacci3,
+                 fibonacci1,  # fast doubling
+                 fibonacci3b,
+                 fibonacci3c,
+                 fibonacci6,  # bits -> string
+                 # fibonacci4,  # slow!
+                 fibonacci5,
+                 fibonacci2,
+                 ]
+    test_numbers = [10, 20, 50,
+                    100, 200, 500,
+                    1000, 2000, 5000,
+                    10000, 20000, 50000,
+                    100000, 200000, 500000,
+                    1000000, 2000000, 5000000]
+    print('\ntest1\n')
+    df_times = []
+    for n in test_numbers:
+        times = {'n': n}
+        print(n)
+        for f in test_list:
+            t0 = time()
+            for i in range(10000):
+                f(i)
+            t1 = time()
+            times[f.__name__] = t1 - t0
+            print('%s(%d)' % (f.__name__, n), 'time =', t1 - t0)
+        df_times.append(times)
+    df_times = pd.DataFrame(df_times)
+
+    print(df_times)
+    print(df_times.sum())
